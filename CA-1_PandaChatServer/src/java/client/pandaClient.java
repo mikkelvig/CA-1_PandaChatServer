@@ -58,6 +58,7 @@ public class pandaClient extends Observable{
     }
     
     public void send(String msg) {
+        
         output.println(msg);
     }
 
