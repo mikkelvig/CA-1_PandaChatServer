@@ -45,7 +45,7 @@ public class ClientHandler extends Thread {
         Logger.getLogger(pandaServer.class.getName()).log(Level.INFO, String.format("Received the message: %1$S ", message));
         while (!message.equals(PandaProtocol.STOP)) {
 //            writer.println(message.toUpperCase());
-            server.send(message.toUpperCase());
+            server.send(message);
             Logger.getLogger(pandaServer.class.getName()).log(Level.INFO, String.format("Received the message: %1$S ", message.toUpperCase()));
             message = input.nextLine(); //IMPORTANT blocking call
         }

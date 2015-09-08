@@ -18,7 +18,7 @@ import utils.Utils;
  *
  * @author Mikkel
  */
-public class pandaGUI extends javax.swing.JFrame {
+public class pandaGUI extends javax.swing.JFrame implements Observer{
 
     pandaClient panda;
     private static final Properties properties = Utils.initProperties("pandaProperty.properties");
@@ -28,6 +28,8 @@ public class pandaGUI extends javax.swing.JFrame {
         int port = Integer.parseInt(properties.getProperty("port"));
         String ip = properties.getProperty("serverIp");
         panda = new pandaClient();
+        panda.addObserver(this);
+
         try {
             panda.connect(ip, port);
         } catch (IOException ex) {
@@ -115,14 +117,7 @@ public class pandaGUI extends javax.swing.JFrame {
     private void sendButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_sendButtonActionPerformed
         panda.send(inputField.getText());
         
-        panda.addObserver(new Observer() {
-
-                @Override
-                public void update(Observable o, Object arg) {
-                    
-                    outputArea.setText(arg.toString());
-                }
-            });
+       
     }//GEN-LAST:event_sendButtonActionPerformed
 
     /**
@@ -167,4 +162,9 @@ public class pandaGUI extends javax.swing.JFrame {
     private javax.swing.JTextArea outputArea;
     private javax.swing.JButton sendButton;
     // End of variables declaration//GEN-END:variables
+
+    @Override
+    public void update(Observable o, Object o1) {
+         outputArea.append(o1.toString()+"\n");
+    }
 }
