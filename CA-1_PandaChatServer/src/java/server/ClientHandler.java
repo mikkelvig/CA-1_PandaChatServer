@@ -23,9 +23,11 @@ public class ClientHandler extends Thread {
     PrintWriter writer;
     Socket socket;
     pandaServer server;
+    String username;
 
-    public ClientHandler(Socket socket, pandaServer server) throws IOException {
+    public ClientHandler(String username, Socket socket, pandaServer server) throws IOException {
 
+        this.username = username;
         this.socket = socket;
         input = new Scanner(socket.getInputStream());
         writer = new PrintWriter(socket.getOutputStream(), true);

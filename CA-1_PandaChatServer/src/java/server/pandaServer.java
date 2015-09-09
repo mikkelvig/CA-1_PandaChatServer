@@ -5,6 +5,7 @@
  */
 package server;
 
+import java.io.BufferedReader;
 import java.io.IOException;
 import java.net.InetSocketAddress;
 import java.net.ServerSocket;
@@ -15,7 +16,12 @@ import java.util.Properties;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import utils.Utils;
-
+import java.io.PrintWriter;
+import java.io.BufferedReader;
+import java.io.InputStreamReader;
+import java.util.HashMap;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentMap;
 
 /**
  *
@@ -23,30 +29,33 @@ import utils.Utils;
  */
 public class pandaServer {
 
-    
     private static final Properties properties = Utils.initProperties("pandaProperty.properties");
     private static ServerSocket serverSocket;
     private static boolean KeepRunning = true;
     pandaServer server = this;
-    List<ClientHandler> clientList = new ArrayList ();
-
-    
+    ConcurrentMap<String, ClientHandler> clientMap = new ConcurrentHashMap();
+//    List<ClientHandler> clientList = new ArrayList ();
+    PrintWriter out;
+    BufferedReader in;
+    String usernamestream;
 
     public static void StopServer() {
         KeepRunning = false;
     }
-    
-     public void send(String msg){
-        for (ClientHandler clientList : clientList){
-            clientList.send(msg);
-        }
-    } 
-     
-     public void removeHandler(ClientHandler client){
-         clientList.remove(client);
- } 
+
+    public void send(String msg) {
+//        for (ClientHandler clientMap : clientMap){
+//            clientMap.send(msg);
+//        }
+
+    }
+
+    public void removeHandler(ClientHandler client) {
+        clientMap.remove(client);
+    }
 
     public void RunServer() {
+
         int port = Integer.parseInt(properties.getProperty("port"));
         String ip = properties.getProperty("serverIp");
 
@@ -57,10 +66,17 @@ public class pandaServer {
             do {
                 Socket socket = serverSocket.accept(); //Important Blocking call
                 Logger.getLogger(pandaServer.class.getName()).log(Level.INFO, "Connected to a client");
-                ClientHandler newclient = new ClientHandler(socket, server);
+//                out = new PrintWriter(socket.getOutputStream());
+                in = new BufferedReader(new InputStreamReader(socket.getInputStream()));
+                usernamestream = in.readLine();
+
+                String[] part = usernamestream.split("#");
+                String username = part[1];
+
+                ClientHandler newclient = new ClientHandler(username, socket, server);
                 newclient.start();
-                clientList.add(newclient);
-                
+                clientMap.put(username, newclient);
+
             } while (KeepRunning);
         } catch (IOException ex) {
             Logger.getLogger(pandaServer.class.getName()).log(Level.SEVERE, null, ex);
