@@ -38,39 +38,45 @@ public class PandaServeren {
         KeepRunning = false;
     }
 
-    public void send(String msg) {
-    
-        String [] parts = msg.split("#");
+    public void send(String username, String msg) {
+
+        String[] parts = msg.split("#");
         String part1 = parts[0]; // selve kommandoen
         String part2 = parts[1]; //brugerne
         String part3 = parts[2]; // selve beskeden
         
-        if (part2.equals("*")){
-            // her skal alle i listen have beskeden
-            for (ClientHandler value : clientMap.values()){
-                value.send(part3);
+
+        if (part1.equals("MSG")) {
+            if (part2.equals("*")) {
+                // her skal alle i listen have beskeden
+                for (ClientHandler value : clientMap.values()) {
+                    String messageToUser = "MSG#"+username+"#";
+                    value.send(messageToUser + part3);
+                }
+            } else {
+                String[] userString = part2.split(","); // ved flere brugere splittes disse op, og får hver deres index i userString arrayet.
+                for (String users : userString) {
+                    ClientHandler value = clientMap.get(users);
+                    String messageToUser = "MSG#"+username+"#";
+                    value.send(messageToUser + part3);
+                }
             }
-        } else {
-        String [] userString = part2.split(","); // ved flere brugere splittes disse op, og får hver deres index i userString arrayet.
-        
+
         }
-        
-        
-        
-        
-        
-        
-        
-//        for (ClientHandler clientMap : clientMap){
-//            clientMap.send(msg);
-//        }
-        
-        
-        
+
     }
 
     public void removeHandler(ClientHandler client) {
-        clientMap.remove(client);
+        clientMap.remove(client.getUsername(), client);
+        // denne blok tilføjer users til stringWithUsers og udskriver til alle klienter
+        String stringWithUsers = "USERLIST#";
+        for (ClientHandler value : clientMap.values()) {
+            stringWithUsers += String.valueOf(value.getUsername() + ",");
+        }
+        for (ClientHandler value : clientMap.values()) {
+            value.send(stringWithUsers);
+        }
+
     }
 
     public void Run() {
@@ -89,7 +95,7 @@ public class PandaServeren {
                 Socket socket = serverSocket.accept();
                 // besked om ny klient, tilføjet til log
                 Logger.getLogger(PandaServeren.class.getName()).log(Level.INFO, "Connected to a client");
-                
+
                 in = new BufferedReader(new InputStreamReader(socket.getInputStream()));
                 usernamestream = in.readLine();
                 String[] part = usernamestream.split("#");
@@ -100,15 +106,19 @@ public class PandaServeren {
                 client.start();
                 // tilføjere den nye client til det trådsikre concurrenthashmap med username som key
                 clientMap.put(username, client);
-                System.out.println("client" + clientMap);
-                System.out.println("" + clientMap.size());
+                // denne blok tilføjer users til stringWithUsers og udskriver til alle klienter
+                String stringWithUsers = "USERLIST#";
+                for (ClientHandler value : clientMap.values()) {
+                    stringWithUsers += String.valueOf(value.getUsername() + ",");
+                }
+                for (ClientHandler value : clientMap.values()) {
+                    value.send(stringWithUsers);
+                }
                 // en boolean som kan sættes til false med stopserver metoden 
             } while (KeepRunning);
         } catch (IOException ex) {
             Logger.getLogger(PandaServeren.class.getName()).log(Level.SEVERE, null, ex);
         }
-
-       
 
     }
 
