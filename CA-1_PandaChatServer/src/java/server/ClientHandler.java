@@ -22,10 +22,10 @@ public class ClientHandler extends Thread {
     Scanner input;
     PrintWriter writer;
     Socket socket;
-    pandaServer server;
+    PandaServeren server;
     String username;
 
-    public ClientHandler(String username, Socket socket, pandaServer server) throws IOException {
+    public ClientHandler(String username, Socket socket, PandaServeren server) throws IOException {
 
         this.username = username;
         this.socket = socket;
@@ -44,11 +44,11 @@ public class ClientHandler extends Thread {
         public void run(){
         
         String message = input.nextLine(); //IMPORTANT blocking call
-        Logger.getLogger(pandaServer.class.getName()).log(Level.INFO, String.format("Received the message: %1$S ", message));
+        Logger.getLogger(PandaServeren.class.getName()).log(Level.INFO, String.format("Received the message: %1$S ", message));
         while (!message.equals(PandaProtocol.STOP)) {
 //            writer.println(message.toUpperCase());
             server.send(message);
-            Logger.getLogger(pandaServer.class.getName()).log(Level.INFO, String.format("Received the message: %1$S ", message.toUpperCase()));
+            Logger.getLogger(PandaServeren.class.getName()).log(Level.INFO, String.format("Received the message: %1$S ", message.toUpperCase()));
             message = input.nextLine(); //IMPORTANT blocking call
         }
         writer.println(PandaProtocol.STOP);//Echo the stop message back to the client for a nice closedown
@@ -58,7 +58,7 @@ public class ClientHandler extends Thread {
         } catch (IOException ex) {
             Logger.getLogger(ClientHandler.class.getName()).log(Level.SEVERE, null, ex);
         }
-        Logger.getLogger(pandaServer.class.getName()).log(Level.INFO, "Closed a Connection");
+        Logger.getLogger(PandaServeren.class.getName()).log(Level.INFO, "Closed a Connection");
     }
         
     
