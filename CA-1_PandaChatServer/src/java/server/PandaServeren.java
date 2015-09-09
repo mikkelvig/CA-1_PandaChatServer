@@ -44,20 +44,19 @@ public class PandaServeren {
         String part1 = parts[0]; // selve kommandoen
         String part2 = parts[1]; //brugerne
         String part3 = parts[2]; // selve beskeden
-        
 
         if (part1.equals("MSG")) {
             if (part2.equals("*")) {
                 // her skal alle i listen have beskeden
                 for (ClientHandler value : clientMap.values()) {
-                    String messageToUser = "MSG#"+username+"#";
+                    String messageToUser = "MSG#" + username + "#";
                     value.send(messageToUser + part3);
                 }
             } else {
                 String[] userString = part2.split(","); // ved flere brugere splittes disse op, og får hver deres index i userString arrayet.
                 for (String users : userString) {
                     ClientHandler value = clientMap.get(users);
-                    String messageToUser = "MSG#"+username+"#";
+                    String messageToUser = "MSG#" + username + "#";
                     value.send(messageToUser + part3);
                 }
             }
@@ -100,20 +99,26 @@ public class PandaServeren {
                 usernamestream = in.readLine();
                 String[] part = usernamestream.split("#");
                 String username = part[1];
-                // bruger den accepterede socket til at oprette en ny client 
-                ClientHandler client = new ClientHandler(username, socket, server);
-                // starter en ny tråd for hver ny client
-                client.start();
-                // tilføjere den nye client til det trådsikre concurrenthashmap med username som key
-                clientMap.put(username, client);
-                // denne blok tilføjer users til stringWithUsers og udskriver til alle klienter
-                String stringWithUsers = "USERLIST#";
-                for (ClientHandler value : clientMap.values()) {
-                    stringWithUsers += String.valueOf(value.getUsername() + ",");
+
+                if (part[0].equals("USER")) {
+                    // bruger den accepterede socket til at oprette en ny client 
+                    ClientHandler client = new ClientHandler(username, socket, server);
+                    // starter en ny tråd for hver ny client
+                    client.start();
+                    // tilføjere den nye client til det trådsikre concurrenthashmap med username som key
+                    clientMap.put(username, client);
+                    // denne blok tilføjer users til stringWithUsers og udskriver til alle klienter
+                    String stringWithUsers = "USERLIST#";
+                    for (ClientHandler value : clientMap.values()) {
+                        stringWithUsers += String.valueOf(value.getUsername() + ",");
+                    }
+                    for (ClientHandler value : clientMap.values()) {
+                        value.send(stringWithUsers);
+                    }
+                } else {
+                    socket.close();
                 }
-                for (ClientHandler value : clientMap.values()) {
-                    value.send(stringWithUsers);
-                }
+
                 // en boolean som kan sættes til false med stopserver metoden 
             } while (KeepRunning);
         } catch (IOException ex) {
@@ -129,10 +134,10 @@ public class PandaServeren {
 
         try {
             String logFile = properties.getProperty("logFile");
-            Utils.setLogFile(logFile, pandaServer.class.getName());
+            Utils.setLogFile(logFile, PandaServeren.class.getName());
 
         } finally {
-            Utils.closeLogger(pandaServer.class.getName());
+            Utils.closeLogger(PandaServeren.class.getName());
         }
     }
 
