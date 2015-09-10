@@ -120,39 +120,55 @@ public class PandaServeren
             do
             {
                 // serversocket venter på at nogen prøver at oprette forbindelse, og accepterer når det sker, og blockerer indtil da 
-                Socket socket = serverSocket.accept();
+                Thread t;
+                            Socket socket = serverSocket.accept();
+                class HelperThread implements Runnable {
+                    Socket socket;
+                    public HelperThread(Socket soc) {
+                    socket=soc;
+                    }
+                    @Override
+                    public void run() {
+                        try {
+                            
+                            in = new BufferedReader(new InputStreamReader(socket.getInputStream()));
+                            usernamestream = in.readLine();
+                            String[] part = usernamestream.split(PandaProtocol.delimiter);
+                            String username = part[1];
+                            
+                            if (part[0].equals(PandaProtocol.userCommand))
+                            {
+                                // bruger den accepterede socket til at oprette en ny client
+                                ClientHandler client = new ClientHandler(username, socket, server);
+                                // starter en ny tråd for hver ny client
+                                client.start();
+                                // tilføjere den nye client til det trådsikre concurrenthashmap med username som key
+                                clientMap.put(username, client);
+                                // denne blok tilføjer users til stringWithUsers og udskriver til alle klienter
+                                String stringWithUsers = PandaProtocol.userlistCommand + PandaProtocol.delimiter;
+                                for (ClientHandler value : clientMap.values())
+                                {
+                                    stringWithUsers += String.valueOf(value.getUsername() + PandaProtocol.userDelimiter);
+                                }
+                                for (ClientHandler value : clientMap.values())
+                                {
+                                    value.send(stringWithUsers);
+                                }
+                            } else
+                            {
+                                out = new PrintWriter(socket.getOutputStream(), true);
+                                out.println(PandaProtocol.ErrorMessage);
+                                socket.close();
+                            }       } catch (IOException ex) {
+                            Logger.getLogger(PandaServeren.class.getName()).log(Level.SEVERE, null, ex);
+                        }
+                    }
+                };
+                t=new Thread(new HelperThread(socket));
+                t.start();
                 // besked om ny klient, tilføjet til log
                 Logger.getLogger(PandaServeren.class.getName()).log(Level.INFO, "Connected to a client");
 
-                in = new BufferedReader(new InputStreamReader(socket.getInputStream()));
-                usernamestream = in.readLine();
-                String[] part = usernamestream.split(PandaProtocol.delimiter);
-                String username = part[1];
-
-                if (part[0].equals(PandaProtocol.userCommand))
-                {
-                    // bruger den accepterede socket til at oprette en ny client 
-                    ClientHandler client = new ClientHandler(username, socket, server);
-                    // starter en ny tråd for hver ny client
-                    client.start();
-                    // tilføjere den nye client til det trådsikre concurrenthashmap med username som key
-                    clientMap.put(username, client);
-                    // denne blok tilføjer users til stringWithUsers og udskriver til alle klienter
-                    String stringWithUsers = PandaProtocol.userlistCommand + PandaProtocol.delimiter;
-                    for (ClientHandler value : clientMap.values())
-                    {
-                        stringWithUsers += String.valueOf(value.getUsername() + PandaProtocol.userDelimiter);
-                    }
-                    for (ClientHandler value : clientMap.values())
-                    {
-                        value.send(stringWithUsers);
-                    }
-                } else
-                {
-                    out = new PrintWriter(socket.getOutputStream(), true);
-                    out.println(PandaProtocol.ErrorMessage);
-                    socket.close();
-                }
                 // en boolean som kan sættes til false med stopserver metoden 
             } while (KeepRunning);
         } catch (IOException ex)

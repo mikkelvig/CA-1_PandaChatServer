@@ -13,6 +13,7 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import org.junit.AfterClass;
 import org.junit.Test;
 import static org.junit.Assert.*;
 import org.junit.Before;
@@ -28,7 +29,7 @@ import utils.Utils;
 public class PandaServerenJUnitTest
 {
 
-    PandaServeren serveren;
+    static PandaServeren serveren;
 
     private static final Properties properties = Utils.initProperties("pandaProperty.properties");
     int port = Integer.parseInt(properties.getProperty("port"));
@@ -43,7 +44,7 @@ public class PandaServerenJUnitTest
 
     @BeforeClass
     //husk at stoppe den efter klasse 
-    public void setUp()
+    public static void setUp()
     {
         Runnable r = new Runnable()
         {
@@ -58,6 +59,12 @@ public class PandaServerenJUnitTest
         };
         new Thread(r).start();
     }
+    
+    @AfterClass
+    public static void tearDownClass(){
+        PandaServeren.StopServer();
+    }
+    
 
     @Test
     public void testOfOneClientTrue() throws IOException
@@ -65,13 +72,10 @@ public class PandaServerenJUnitTest
         socket = new Socket(ip, port);
         input = new Scanner(socket.getInputStream());
         output = new PrintWriter(socket.getOutputStream(), true); //Set to true, to get auto flush behaviour
-        
-        socket2 = new Socket(ip, port);
-        input2 = new Scanner(socket.getInputStream());
-        output2 = new PrintWriter(socket.getOutputStream(), true); //Set to true, to get auto flush behaviour
-        
-        
-        testpanda.send("USER#testpanda");
+        output.write("USER#Bubber");
+        String serverResponse = "USERLIST#Bubber,";
+        System.out.println("gad vide om man kan se det her: "+input.nextLine());
+        assertTrue(serverResponse.equals(input.nextLine()));
 
 //        testpanda.send("MSG#*#Hej testpanda");
         // debug
