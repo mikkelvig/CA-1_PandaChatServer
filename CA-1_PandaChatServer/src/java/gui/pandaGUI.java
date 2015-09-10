@@ -115,9 +115,8 @@ public class pandaGUI extends javax.swing.JFrame implements Observer{
     }//GEN-LAST:event_inputFieldActionPerformed
 
     private void sendButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_sendButtonActionPerformed
-        panda.send(inputField.getText());
         
-       
+        panda.send(inputField.getText());  
     }//GEN-LAST:event_sendButtonActionPerformed
 
     /**

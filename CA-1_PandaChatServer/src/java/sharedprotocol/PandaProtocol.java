@@ -11,6 +11,14 @@ package sharedprotocol;
  */
 public class PandaProtocol {
     
-    public static final String STOP = "STOP#";
-    
+    public static final String STOP = "STOP#"; 
+    public static final String messageCommand = "MSG";
+    public static final String delimiter = "#";
+    public static final String userDelimiter = ",";
+    public static final String sendToAllUsers = "*";
+    public static final String userlistCommand ="USERLIST";
+    public static final String userCommand ="USER";
+    public static final String ErrorMessage ="The server is unable to process your command, please try again";
+    public static final String loginErrorMessage ="Login failed";
 }
+

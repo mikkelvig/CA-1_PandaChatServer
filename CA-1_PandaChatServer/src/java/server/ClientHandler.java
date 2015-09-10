@@ -32,7 +32,6 @@ public class ClientHandler extends Thread {
         input = new Scanner(socket.getInputStream());
         writer = new PrintWriter(socket.getOutputStream(), true);
         this.server = server;
-
     }
 
     public void send(String msg) {
@@ -41,11 +40,7 @@ public class ClientHandler extends Thread {
 
     public String getUsername() {
         return username;
-    }
-    
-    
-
-          
+    }    
         @Override
         public void run(){
         
