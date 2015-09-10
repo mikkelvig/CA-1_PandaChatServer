@@ -1,6 +1,8 @@
 
 import client.pandaClient;
+import java.io.BufferedReader;
 import java.io.IOException;
+import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.io.PrintWriter;
 import java.net.Proxy;
@@ -26,8 +28,7 @@ import utils.Utils;
  *
  * @author Bente
  */
-public class PandaServerenJUnitTest
-{
+public class PandaServerenJUnitTest {
 
     static PandaServeren serveren;
 
@@ -37,21 +38,18 @@ public class PandaServerenJUnitTest
     private Scanner input;
     private PrintWriter output;
     Socket socket;
+    BufferedReader in;
 
-    public PandaServerenJUnitTest()
-    {
+    public PandaServerenJUnitTest() {
     }
 
     @BeforeClass
     //husk at stoppe den efter klasse 
-    public static void setUp()
-    {
-        Runnable r = new Runnable()
-        {
+    public static void setUp() {
+        Runnable r = new Runnable() {
 
             @Override
-            public void run()
-            {
+            public void run() {
                 serveren = new PandaServeren();
 
                 serveren.Run();
@@ -59,23 +57,41 @@ public class PandaServerenJUnitTest
         };
         new Thread(r).start();
     }
-    
+
     @AfterClass
-    public static void tearDownClass(){
+    public static void tearDownClass() {
         PandaServeren.StopServer();
     }
-    
 
     @Test
-    public void testOfOneClientTrue() throws IOException
-    {
+    public void testOfOneClientTrue() throws IOException {
+
         socket = new Socket(ip, port);
+        in = new BufferedReader(new InputStreamReader(socket.getInputStream()));
         input = new Scanner(socket.getInputStream());
-        output = new PrintWriter(socket.getOutputStream(), true); //Set to true, to get auto flush behaviour
+        output = new PrintWriter(socket.getOutputStream(), true);
         output.write("USER#Bubber");
-        String serverResponse = "USERLIST#Bubber,";
-        System.out.println("gad vide om man kan se det her: "+input.nextLine());
-        assertTrue(serverResponse.equals(input.nextLine()));
+
+        new Thread(new Runnable() {
+            @Override
+            public void run() {
+
+                String sm = input.nextLine();
+
+                notifyAll();
+                try {
+                    sm = in.readLine();
+                } catch (IOException ex) {
+                    Logger.getLogger(PandaServerenJUnitTest.class.getName()).log(Level.SEVERE, null, ex);
+                }
+
+                String serverResponse = "USERLIST#Bubber,";
+//      System.out.println("gad vide om man kan se det her: " + input.nextLine());
+                assertTrue(serverResponse.equals(sm));
+
+            }
+
+        }).start();
 
 //        testpanda.send("MSG#*#Hej testpanda");
         // debug
