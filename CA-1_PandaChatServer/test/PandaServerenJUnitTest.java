@@ -35,6 +35,7 @@ public class PandaServerenJUnitTest {
     private static final Properties properties = Utils.initProperties("pandaProperty.properties");
     int port = Integer.parseInt(properties.getProperty("port"));
     String ip = properties.getProperty("serverIp");
+
     private Scanner input;
     private PrintWriter output;
     Socket socket;
@@ -64,34 +65,33 @@ public class PandaServerenJUnitTest {
     }
 
     @Test
-    public void testOfOneClientTrue() throws IOException {
+    public void testOfOneClientTrue()  throws IOException  {
 
+        
         socket = new Socket(ip, port);
-        in = new BufferedReader(new InputStreamReader(socket.getInputStream()));
         input = new Scanner(socket.getInputStream());
         output = new PrintWriter(socket.getOutputStream(), true);
-        output.write("USER#Bubber");
+        in = new BufferedReader(new InputStreamReader(socket.getInputStream()));
+        
+        String msg = null;
+        msg = "USER#Bubber";
 
-        new Thread(new Runnable() {
-            @Override
-            public void run() {
+                        output.println(msg);
+//                      output.write("USER#Bubber");
+                        msg = in.readLine();
 
-                String sm = input.nextLine();
-
-                notifyAll();
-                try {
-                    sm = in.readLine();
-                } catch (IOException ex) {
-                    Logger.getLogger(PandaServerenJUnitTest.class.getName()).log(Level.SEVERE, null, ex);
-                }
-
-                String serverResponse = "USERLIST#Bubber,";
+                    String serverResponse = "USERLIST#Bubber,";
+                    System.out.println("" + msg); // sout kan slettes, men visiuelt overblik
+                    System.out.println("" + serverResponse); // sout kan slettes, men visiuelt overblik
+                    assertTrue(serverResponse.equals(msg));
+                    
+                    
+             
 //      System.out.println("gad vide om man kan se det her: " + input.nextLine());
-                assertTrue(serverResponse.equals(sm));
+               
 
-            }
-
-        }).start();
+   
+        
 
 //        testpanda.send("MSG#*#Hej testpanda");
         // debug
