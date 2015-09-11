@@ -55,6 +55,8 @@ public class ClientHandler extends Thread {
         writer.println(PandaProtocol.STOP);//Echo the stop message back to the client for a nice closedown
         try {
             socket.close();
+            input.close();
+            writer.close();
             server.removeHandler(this);
         } catch (IOException ex) {
             Logger.getLogger(ClientHandler.class.getName()).log(Level.SEVERE, null, ex);
